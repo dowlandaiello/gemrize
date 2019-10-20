@@ -5,9 +5,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
-
-	"github.com/buger/goterm"
 )
 
 // main is the gemrize cli.
@@ -31,7 +30,14 @@ func main() {
 			repeatedCorrectly := false
 
 			for !repeatedCorrectly {
-				mergedWords := strings.Join(words[int(i):i+lookForward], " ") // Merge the individual words
+				cutoff := i + lookForward // The last words to include
+
+				// Check out of bounds
+				if cutoff >= len(words)+1 {
+					cutoff = len(words) // Just get the rest of the words
+				}
+
+				mergedWords := strings.Join(words[int(i):cutoff], " ") // Merge the individual words
 
 				repeated := prompt(fmt.Sprintf("Please type the following: %s", mergedWords), reader) // Print the words to repeat
 
@@ -52,9 +58,9 @@ func prompt(prompt string, reader *bufio.Reader) string {
 		panic(err) // Panic
 	}
 
-	// Clear the terminal
-	goterm.Clear()
-	goterm.Flush()
+	c := exec.Command("clear")
+	c.Stdout = os.Stdout
+	c.Run()
 
-	return strings.Replace(strings.Replace(strings.Replace(text, "\n", "", 1), "“", `"`, -1), "”", `"`, -1) // Remove a \n character
+	return strings.Replace(strings.Replace(strings.Replace(strings.Replace(text, "\n", "", 1), "“", `"`, -1), "”", `"`, -1), "—", "-", -1) // Remove a \n character
 }
